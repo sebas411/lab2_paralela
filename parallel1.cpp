@@ -9,7 +9,7 @@
 #define N 1000000
 #define MAX 100000000
 using namespace std;
-int number_of_threads= 6;
+int number_of_threads= 12;
 
 
 
@@ -87,7 +87,8 @@ int main(int argc, char * argv[]) {
         //cout <<" El bloque numero"<< j << " empieza en"<<start<<" y termina en "<<end<< endl;
         par_qsort(Array,start,end);
     }
-    par_qsort(Array, 0, n-1);
+
+    //par_qsort(Array, 0, n-1);
 
 
 

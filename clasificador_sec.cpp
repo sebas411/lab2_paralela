@@ -5,8 +5,8 @@
 #include <time.h>
 #include <omp.h>
 
-#define N 100
-#define MAX 1000
+#define N 10000
+#define MAX 100000000
 using namespace std;
 
 void par_qsort(int *data, int lo, int hi) {
@@ -70,7 +70,7 @@ int main(int argc, char * argv[]) {
         getline(numFileR, ch, ',');
         Array[i] = stoi(ch);
     }
-
+    //inicia la medicion del tiempo, tras haber leido los datos
     double start = omp_get_wtime();
     par_qsort(Array, 0, n-1);
     double end = omp_get_wtime();
