@@ -3,13 +3,17 @@
 * Sebastián Maldonado 18003
 * Pablo Coutiño 18817
 ## Compilación
+* Secuencial y paralelo:
+    ```
+    make
+    ```
 * Secuencial:
     ```
-    g++ clasificador_sec.cpp -fopenmp -o clasificador_sec
+    make sec
     ```
 * Paralelo:
     ```
-    g++ clasificador_par.cpp -fopenmp -o clasificador_par
+    make par
     ```
 ## Ejecución
 * Secuencial:
@@ -18,5 +22,5 @@
     ```
 * Paralelo:
     ```
-    ./clasificador_par N max_rand
+    ./clasificador_par N max_rand thread_num
     ```

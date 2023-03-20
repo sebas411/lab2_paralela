@@ -4,17 +4,13 @@
 #include <unistd.h>
 #include <time.h>
 #include <omp.h>
-#include <cmath>
 
-#define N 1000000
+#define N 10000000
 #define MAX 100000000
+#define THREAD_NUM 4
 using namespace std;
-int number_of_threads= 12;
 
-
-
-
-void par_qsort(int *data, int lo, int hi) {
+void par_qsort(int *data, int lo, int hi, int recursion_num=0) {
   if(lo > hi) return;
   int l = lo;
   int h = hi;
@@ -32,19 +28,25 @@ void par_qsort(int *data, int lo, int hi) {
     }
   }
   
-  par_qsort(data, lo, h);
-  par_qsort(data, l, hi);
+#pragma omp task if(recursion_num < 10) untied
+  par_qsort(data, lo, h, recursion_num + 1);
+#pragma omp task if(recursion_num < 10) untied
+  par_qsort(data, l, hi, recursion_num + 1);
+#pragma omp taskwait
 }
 
 int main(int argc, char * argv[]) {
     srand(time(0));
 
-    int n = N, max = MAX;
+    int n = N, max = MAX, threads = THREAD_NUM;
     if (argc > 1) {
         n = stoi(argv[1]);
     }
     if (argc > 2) {
         max = stoi(argv[2]);
+    }
+    if (argc > 3) {
+        threads = stoi(argv[3]);
     }
 
     ofstream numFile("num.csv",ios::out);
@@ -75,27 +77,17 @@ int main(int argc, char * argv[]) {
         getline(numFileR, ch, ',');
         Array[i] = stoi(ch);
     }
-    //inicia la medicion del tiempo, tras haber leido los datos
-    double start = omp_get_wtime();
-
-    int sliceSize= round(n/number_of_threads);
-    cout<< sliceSize << " ES el tamaño de los sub conjuntos"<< endl;
-    #pragma omp parallel for num_threads(thread_count)
-    for (int j = 0; j < number_of_threads;j++){
-        int start = j*sliceSize;
-        int end = (j+1)*sliceSize;
-        //cout <<" El bloque numero"<< j << " empieza en"<<start<<" y termina en "<<end<< endl;
-        par_qsort(Array,start,end);
-    }
-
-    //par_qsort(Array, 0, n-1);
-
-
-
-
+    double start = omp_get_wtime(); // iniciar medición de tiempo
+#pragma omp parallel num_threads(threads)
+    { // start omp parallel
+#pragma omp single
+    { // start omp single
+    par_qsort(Array, 0, n-1);
+    } // end omp single
+    } // end omp parallel
     double end = omp_get_wtime();
     double delta = end - start;
-
+    cout << "El tiempo de ejecución para el programa paralelo, usando "<< threads <<" hilos fue de " << delta << "s" << endl;
     ofstream sortedFile;
     sortedFile.open("sorted.csv");
     if ( sortedFile.bad() ) {
@@ -110,7 +102,6 @@ int main(int argc, char * argv[]) {
 
     cout << "Datos ordenados y guardados en sorted.csv" << endl;
 
-    cout << "El tiempo de ejecución para el programa paralelo 1 fue de " << delta << "s" << endl;
     numFileR.close();
     sortedFile.close();
     delete Array;
